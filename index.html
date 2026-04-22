@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="עצמאות כלכלית">
+<title>מסלול עצמאות כלכלית</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a120a;
+    --bg2: #111c11;
+    --bg3: #1a2a1a;
+    --border: #1e2e1e;
+    --border2: #2e3d2e;
+    --gold: #e8b84b;
+    --green: #6be87a;
+    --red: #e87070;
+    --text: #d4e8d4;
+    --muted: #8aab8a;
+    --dim: #6b8c6b;
+    --dimmer: #4a6a4a;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Heebo', 'Arial Hebrew', Arial, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Header */
+  .header {
+    background: linear-gradient(180deg, #0f1e0f 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 16px 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .header-label { font-size: 11px; color: var(--dim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold); font-weight: 400; }
+  .settings-btn {
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px;
+    padding: 8px 14px; color: var(--muted); cursor: pointer; font-size: 13px;
+    font-family: inherit;
+  }
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; padding-bottom: 0; }
+  .tab {
+    flex: 1; padding: 10px 0; border-radius: 8px 8px 0 0; border: none; cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all 0.2s; background: transparent;
+    color: var(--dim);
+  }
+  .tab.active { background: var(--gold); color: #111; font-weight: 700; }
+  /* Content */
+  .content { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
+  /* Cards */
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+  }
+  .card-sm { padding: 14px 16px; }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Ring gauge */
+  .ring-wrap { position: relative; flex-shrink: 0; }
+  .ring-label {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .ring-pct { font-size: 22px; font-weight: 700; color: var(--gold); }
+  .ring-sub { font-size: 10px; color: var(--dim); }
+  /* Stat cards */
+  .stat-label { font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+  .stat-value { font-size: 20px; font-weight: 700; }
+  /* Buttons */
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer;
+    font-size: 14px; font-family: inherit; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--gold); color: #111; font-weight: 700; }
+  .btn-ghost { background: transparent; color: var(--gold); border: 1px solid #e8b84b33; }
+  .btn-block { width: 100%; padding: 14px 0; }
+  /* Transaction item */
+  .tx-item { display: flex; align-items: center; gap: 12px; }
+  .tx-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .tx-icon.income { background: #0d2e14; }
+  .tx-icon.expense { background: #2e0d0d; }
+  .tx-desc { font-size: 14px; }
+  .tx-cat { font-size: 11px; color: var(--dimmer); margin-top: 2px; }
+  .tx-amount { font-size: 16px; font-weight: 700; }
+  .tx-del { background: none; border: none; color: var(--dimmer); cursor: pointer; font-size: 11px; }
+  /* Progress bar */
+  .bar-track { height: 6px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--gold); transition: width 0.8s ease; }
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-box {
+    background: #111c11; border: 1px solid var(--border2); border-radius: 16px;
+    width: 100%; max-width: 420px; padding: 24px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-title { color: var(--gold); font-size: 18px; font-family: 'Playfair Display', serif; font-weight: 400; }
+  .modal-close { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 24px; line-height: 1; }
+  /* Form */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 15px;
+    outline: none; font-family: inherit; direction: rtl;
+  }
+  .field input:focus, .field select:focus { border-color: var(--gold); }
+  .fi-hint { color: var(--dimmer); font-size: 11px; line-height: 1.6; margin-bottom: 16px; }
+  /* Empty state */
+  .empty { color: #3a5a3a; font-size: 13px; padding: 14px; }
+  /* Net worth big */
+  .networth-card {
+    background: linear-gradient(135deg, #0f1e0f, #161f16);
+    border: 1px solid #2e4a2e; border-radius: 16px; padding: 20px;
+  }
+  .networth-label { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .networth-value { font-size: 32px; font-weight: 700; font-family: 'Playfair Display', serif; }
+  /* section totals */
+  .total-row {
+    background: transparent; border-radius: 12px; padding: 10px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid var(--border);
+  }
+  .total-label { color: var(--dim); font-size: 13px; }
+  .hidden { display: none; }
+  .btn-row { display: flex; gap: 10px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .section-title { font-size: 16px; font-weight: 700; margin: 0; }
+  .asset-row, .debt-row {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .del-btn { background: none; border: none; color: var(--dimmer); cursor: pointer; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-label">מסלול</div>
+      <div class="header-title">עצמאות כלכלית</div>
+    </div>
+    <button class="settings-btn" onclick="openModal('settings')">הגדרות ⚙</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dashboard', this)">לוח בקרה</button>
+    <button class="tab" onclick="switchTab('transactions', this)">תנועות</button>
+    <button class="tab" onclick="switchTab('balance', this)">מאזן</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+
+<div class="content" id="tab-dashboard">
+  <div class="stack">
+    <!-- FI Ring -->
+    <div class="card" style="display:flex;align-items:center;gap:20px;">
+      <div class="ring-wrap">
+        <svg id="ring-svg" width="110" height="110" style="transform:rotate(-90deg)">
+          <circle cx="55" cy="55" r="48" fill="none" stroke="#1e2a1e" stroke-width="9"/>
+          <circle id="ring-fill" cx="55" cy="55" r="48" fill="none" stroke="#e8b84b" stroke-width="9"
+            stroke-dasharray="0 301.6" stroke-linecap="round" style="transition:stroke-dasharray 0.8s cubic-bezier(.4,0,.2,1)"/>
+        </svg>
+        <div class="ring-label">
+          <span class="ring-pct" id="fi-pct">0%</span>
+          <span class="ring-sub">מיעד</span>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div style="color:var(--muted);font-size:12px;margin-bottom:6px;">שווי נקי</div>
+        <div id="networth-display" style="font-size:26px;font-weight:700;font-family:'Playfair Display',serif;">₪0</div>
+        <div id="fi-target-label" style="color:var(--dim);font-size:12px;margin-top:4px;"></div>
+      </div>
+    </div>
+
+```
+<!-- Stats grid -->
+<div class="grid2">
+  <div class="card" style="padding:16px">
+    <div class="stat-label">הכנסות</div>
+    <div class="stat-value" id="stat-income" style="color:var(--green)">₪0</div>
+  </div>
+  <div class="card" style="padding:16px">
+    <div class="stat-label">הוצאות</div>
+    <div class="stat-value" id="stat-expense" style="color:var(--red)">₪0</div>
+  </div>
+  <div class="card" style="padding:16px">
+    <div class="stat-label">תזרים נטו</div>
+    <div class="stat-value" id="stat-net">₪0</div>
+  </div>
+  <div class="card" style="padding:16px">
+    <div class="stat-label">אחוז חיסכון</div>
+    <div class="stat-value" id="stat-savings-rate" style="color:var(--gold)">0%</div>
+  </div>
+</div>
+
+<!-- Savings bar -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+    <span style="color:var(--muted);font-size:13px;">חיסכון נזיל</span>
+    <span id="savings-display" style="color:var(--gold);font-weight:700;">₪0</span>
+  </div>
+  <div class="bar-track">
+    <div class="bar-fill" id="savings-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- Quick add -->
+<div class="grid2">
+  <button class="btn btn-primary btn-block" onclick="openModal('income')">+ הכנסה</button>
+  <button class="btn btn-ghost btn-block" onclick="openModal('expense')">+ הוצאה</button>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- TRANSACTIONS -->
+
+<div class="content hidden" id="tab-transactions">
+  <div class="section-header">
+    <h2 style="color:var(--muted);font-size:16px;font-weight:400;">תנועות</h2>
+    <button class="btn btn-primary" onclick="openModal('expense')">+ הוסף</button>
+  </div>
+  <div class="stack" id="tx-list">
+    <div class="card empty">אין תנועות עדיין</div>
+  </div>
+</div>
+
+<!-- BALANCE -->
+
+<div class="content hidden" id="tab-balance">
+  <div class="stack">
+    <!-- Assets -->
+    <div>
+      <div class="section-header">
+        <h2 class="section-title" style="color:var(--green);">נכסים</h2>
+        <button class="btn btn-primary" onclick="openModal('asset')">+ נכס</button>
+      </div>
+      <div class="stack" id="assets-list">
+        <div class="card empty">אין נכסים רשומים</div>
+      </div>
+      <div class="total-row" style="margin-top:8px;">
+        <span class="total-label">סה״כ נכסים</span>
+        <span id="total-assets" style="color:var(--green);font-weight:700;">₪0</span>
+      </div>
+    </div>
+
+```
+<!-- Debts -->
+<div>
+  <div class="section-header">
+    <h2 class="section-title" style="color:var(--red);">חובות</h2>
+    <button class="btn btn-ghost" onclick="openModal('debt')">+ חוב</button>
+  </div>
+  <div class="stack" id="debts-list">
+    <div class="card empty">אין חובות רשומים</div>
+  </div>
+  <div class="total-row" style="margin-top:8px;">
+    <span class="total-label">סה״כ חובות</span>
+    <span id="total-debts" style="color:var(--red);font-weight:700;">₪0</span>
+  </div>
+</div>
+
+<!-- Net worth -->
+<div class="networth-card">
+  <div class="networth-label">שווי נקי כולל</div>
+  <div class="networth-value" id="balance-networth">₪0</div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">כותרת</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'fi-tracker-v1';
+const CAT_INCOME = ['שכר','עסק עצמאי','שכירות','השקעות','אחר'];
+const CAT_EXPENSE = ['דיור','מזון','תחבורה','בריאות','חינוך','בידור','ביגוד','חסכון','אחר'];
+
+let data = { savings: 0, fiTarget: 0, transactions: [], assets: [], debts: [] };
+
+function load() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) data = JSON.parse(s);
+  } catch(e) {}
+  render();
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function ils(n) {
+  return '₪' + Math.abs(n || 0).toLocaleString('he-IL', { maximumFractionDigits: 0 });
+}
+
+function render() {
+  const inc = data.transactions.filter(t => t.type === 'income').reduce((s,t) => s+t.amount, 0);
+  const exp = data.transactions.filter(t => t.type === 'expense').reduce((s,t) => s+t.amount, 0);
+  const net = inc - exp;
+  const totalAssets = data.assets.reduce((s,a) => s+a.value, 0) + data.savings;
+  const totalDebts = data.debts.reduce((s,d) => s+d.amount, 0);
+  const netWorth = totalAssets - totalDebts;
+  const fiPct = data.fiTarget > 0 ? Math.min((netWorth / data.fiTarget) * 100, 100) : 0;
+  const savingsRate = inc > 0 ? Math.max(0, (net / inc) * 100) : 0;
+  const CIRC = 2 * Math.PI * 48;
+
+  // Ring
+  document.getElementById('ring-fill').setAttribute('stroke-dasharray', `${(fiPct/100)*CIRC} ${CIRC}`);
+  document.getElementById('fi-pct').textContent = fiPct.toFixed(0) + '%';
+  document.getElementById('networth-display').textContent = (netWorth < 0 ? '-' : '') + ils(netWorth);
+  document.getElementById('networth-display').style.color = netWorth >= 0 ? 'var(--text)' : 'var(--red)';
+  document.getElementById('fi-target-label').textContent = data.fiTarget > 0
+    ? 'מתוך ' + ils(data.fiTarget) + ' יעד'
+    : 'הגדר יעד בהגדרות';
+
+  // Stats
+  document.getElementById('stat-income').textContent = ils(inc);
+  document.getElementById('stat-expense').textContent = ils(exp);
+  document.getElementById('stat-net').textContent = (net < 0 ? '-' : '') + ils(net);
+  document.getElementById('stat-net').style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('stat-savings-rate').textContent = savingsRate.toFixed(0) + '%';
+  document.getElementById('savings-display').textContent = ils(data.savings);
+  document.getElementById('savings-bar').style.width = data.fiTarget > 0
+    ? Math.min((data.savings / data.fiTarget) * 100, 100) + '%' : '0%';
+
+  // Balance
+  document.getElementById('total-assets').textContent = ils(totalAssets);
+  document.getElementById('total-debts').textContent = '-' + ils(totalDebts);
+  document.getElementById('balance-networth').textContent = (netWorth < 0 ? '-' : '') + ils(netWorth);
+  document.getElementById('balance-networth').style.color = netWorth >= 0 ? 'var(--gold)' : 'var(--red)';
+
+  // Transactions list
+  const txList = document.getElementById('tx-list');
+  if (data.transactions.length === 0) {
+    txList.innerHTML = '<div class="card empty">אין תנועות עדיין</div>';
+  } else {
+    txList.innerHTML = [...data.transactions].reverse().map(t => `
+      <div class="card card-sm">
+        <div class="tx-item">
+          <div class="tx-icon ${t.type}">${t.type === 'income' ? '↑' : '↓'}</div>
+          <div style="flex:1">
+            <div class="tx-desc">${t.desc}</div>
+            <div class="tx-cat">${t.category} · ${t.date}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span class="tx-amount" style="color:${t.type==='income'?'var(--green)':'var(--red)'}">
+              ${t.type==='income'?'+':'-'}${ils(t.amount)}
+            </span>
+            <button class="tx-del" onclick="deleteTx(${t.id})">מחק</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Assets list
+  const assetsList = document.getElementById('assets-list');
+  if (data.assets.length === 0) {
+    assetsList.innerHTML = '<div class="card empty">אין נכסים רשומים</div>';
+  } else {
+    assetsList.innerHTML = data.assets.map(a => `
+      <div class="card card-sm">
+        <div class="asset-row">
+          <span>${a.name}</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="color:var(--green);font-weight:700">${ils(a.value)}</span>
+            <button class="del-btn" onclick="deleteAsset(${a.id})">×</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Debts list
+  const debtsList = document.getElementById('debts-list');
+  if (data.debts.length === 0) {
+    debtsList.innerHTML = '<div class="card empty">אין חובות רשומים</div>';
+  } else {
+    debtsList.innerHTML = data.debts.map(d => `
+      <div class="card card-sm">
+        <div class="debt-row">
+          <span>${d.name}</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="color:var(--red);font-weight:700">-${ils(d.amount)}</span>
+            <button class="del-btn" onclick="deleteDebt(${d.id})">×</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// Tabs
+function switchTab(name, el) {
+  document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  el.classList.add('active');
+}
+
+// Modal
+function openModal(type) {
+  const overlay = document.getElementById('modal-overlay');
+  const title = document.getElementById('modal-title');
+  const content = document.getElementById('modal-content');
+  overlay.classList.remove('hidden');
+
+  if (type === 'income' || type === 'expense') {
+    title.textContent = type === 'income' ? 'הוסף הכנסה' : 'הוסף הוצאה';
+    const cats = type === 'income' ? CAT_INCOME : CAT_EXPENSE;
+    content.innerHTML = `
+      <div class="field"><label>תיאור</label>
+        <input type="text" id="f-desc" placeholder="לדוגמה: שיעור יוגה..."></div>
+      <div class="field"><label>סכום (₪)</label>
+        <input type="number" id="f-amount" placeholder="0" inputmode="decimal"></div>
+      <div class="field"><label>קטגוריה</label>
+        <select id="f-cat">${cats.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveTransaction('${type}')">שמור</button>
+        <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+      </div>`;
+    setTimeout(() => document.getElementById('f-desc').focus(), 100);
+  }
+
+  if (type === 'asset') {
+    title.textContent = 'הוסף נכס';
+    content.innerHTML = `
+      <div class="field"><label>שם הנכס</label>
+        <input type="text" id="f-name" placeholder="קרן השתלמות, מניות..."></div>
+      <div class="field"><label>שווי (₪)</label>
+        <input type="number" id="f-val" placeholder="0" inputmode="decimal"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveAsset()">שמור</button>
+        <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+      </div>`;
+  }
+
+  if (type === 'debt') {
+    title.textContent = 'הוסף חוב';
+    content.innerHTML = `
+      <div class="field"><label>שם החוב</label>
+        <input type="text" id="f-name" placeholder="משכנתא, הלוואה..."></div>
+      <div class="field"><label>סכום (₪)</label>
+        <input type="number" id="f-val" placeholder="0" inputmode="decimal"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveDebt()">שמור</button>
+        <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+      </div>`;
+  }
+
+  if (type === 'settings') {
+    title.textContent = 'הגדרות';
+    content.innerHTML = `
+      <div class="field"><label>חיסכון נזיל נוכחי (₪)</label>
+        <input type="number" id="f-savings" value="${data.savings}" inputmode="decimal"></div>
+      <div class="field"><label>יעד עצמאות כלכלית (₪)</label>
+        <input type="number" id="f-target" value="${data.fiTarget}" placeholder="לדוגמה: 3000000" inputmode="decimal"></div>
+      <p class="fi-hint">כלל ה-25×: יעד FI = 25 × הוצאות שנתיות (שיעור משיכה 4%)</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveSettings()">שמור</button>
+        <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+      </div>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function saveTransaction(type) {
+  const desc = document.getElementById('f-desc').value.trim();
+  const amount = parseFloat(document.getElementById('f-amount').value);
+  const category = document.getElementById('f-cat').value;
+  if (!desc || !amount) return;
+  data.transactions.push({
+    id: Date.now(), type, amount, desc, category,
+    date: new Date().toLocaleDateString('he-IL')
+  });
+  save(); render(); closeModal();
+}
+
+function saveAsset() {
+  const name = document.getElementById('f-name').value.trim();
+  const value = parseFloat(document.getElementById('f-val').value);
+  if (!name || !value) return;
+  data.assets.push({ id: Date.now(), name, value });
+  save(); render(); closeModal();
+}
+
+function saveDebt() {
+  const name = document.getElementById('f-name').value.trim();
+  const amount = parseFloat(document.getElementById('f-val').value);
+  if (!name || !amount) return;
+  data.debts.push({ id: Date.now(), name, amount });
+  save(); render(); closeModal();
+}
+
+function saveSettings() {
+  data.savings = parseFloat(document.getElementById('f-savings').value) || 0;
+  data.fiTarget = parseFloat(document.getElementById('f-target').value) || 0;
+  save(); render(); closeModal();
+}
+
+function deleteTx(id) {
+  data.transactions = data.transactions.filter(t => t.id !== id);
+  save(); render();
+}
+function deleteAsset(id) {
+  data.assets = data.assets.filter(a => a.id !== id);
+  save(); render();
+}
+function deleteDebt(id) {
+  data.debts = data.debts.filter(d => d.id !== id);
+  save(); render();
+}
+
+load();
+</script>
+
+</body>
+</html>
